@@ -41,19 +41,15 @@ def get_numbered_cells(matrix, num_rows, num_cols):
                 list_of_cells.append((i, j))
     return list_of_cells
 
-def get_list_uninvolved_cells_variable(combination, surrounding_cells, variables):
+def get_list_uninvolved_and_involved_cells_variable(combination, surrounding_cells, variables):
     uninvolved_cells = []
+    involved_cells = []
     for cell in surrounding_cells:
         if cell not in combination:
             uninvolved_cells.append(variables[cell])
-    return uninvolved_cells
-
-def get_list_involved_cells_variable(combination, surrounding_cells, variables):
-    involved_cells = []
-    for cell in surrounding_cells:
-        if cell in combination:
+        else:
             involved_cells.append(variables[cell])
-    return involved_cells
+    return uninvolved_cells, involved_cells
 
 def generateCNFFromConstraintsByCell(cell,matrix, num_rows, num_cols, variables):
     clauses = []
@@ -64,8 +60,7 @@ def generateCNFFromConstraintsByCell(cell,matrix, num_rows, num_cols, variables)
         return clauses
     combination = combinations(surrrounding_cells, matrix[cell[0]][cell[1]])
     for c in combination:
-        uninvolved_cells = get_list_uninvolved_cells_variable(c, surrrounding_cells, variables)
-        involved_cells = get_list_involved_cells_variable(c, surrrounding_cells, variables)
+        uninvolved_cells, involved_cells = get_list_uninvolved_and_involved_cells_variable(c, surrrounding_cells, variables)
         for cell in uninvolved_cells:
             sub_clause = []
             sub_clause.append(cell)
