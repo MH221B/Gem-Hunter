@@ -1,24 +1,6 @@
-from pysat.formula import *
-from pysat.solvers import Solver
-
-# Define atoms
-x, y, z = Atom('x'), Atom('y'), Atom('z')
-
-# Define implication statements
-a = Implies(x, y)
-b = Implies(y, z)
-
-# Combine atoms to form the conjunction
-formula = And(a, b)
-
-# Initialize solver
-s = Solver(name='g4')
-
-# Add the formula to the solver
-s.add_clause([formula])
-
-# Solve the formula
-s.solve()
-
-# Print the model
-print(s.get_model())
+from pysat.solvers import Glucose3
+g = Glucose3()
+g.add_clause([-1, 2])
+g.add_clause([-2, 3])
+print(g.solve())
+print(g.get_model())

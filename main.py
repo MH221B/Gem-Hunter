@@ -21,6 +21,7 @@ def assign_variables(matrix, num_rows, num_cols):
             count += 1
     return variables
 
+# Get the neighboring cells of a cell
 def get_surrounding_cells(pos, num_rows, num_cols):
     list_of_cells = []
     for i in range(pos[0] - 1, pos[0] + 2):
@@ -28,3 +29,4 @@ def get_surrounding_cells(pos, num_rows, num_cols):
             if i >= 0 and i < num_rows and j >= 0 and j < num_cols and (i, j) != pos:
                 list_of_cells.append((i, j))
     return list_of_cells
+
