@@ -60,4 +60,4 @@ def main(file_path):
 
 
 if __name__ == "__main__":
-    main("input.txt")
+    main("testcases/11x11.txt")

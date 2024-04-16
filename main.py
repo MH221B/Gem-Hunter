@@ -41,6 +41,26 @@ def get_numbered_cells(matrix, num_rows, num_cols):
                 list_of_cells.append((i, j))
     return list_of_cells
 
+#get irrelevant cells
+def get_irrelevant_cells(matrix, num_rows, num_cols):
+    list_of_cells = []
+    for i in range(num_rows):
+        for j in range(num_cols):
+            if matrix[i][j] is None:
+                list_of_cells.append((i, j))
+    new_list = list_of_cells.copy()
+    for cell in list_of_cells:
+        check = True
+        for i in range(cell[0] - 1, cell[0] + 2):
+            for j in range(cell[1] - 1, cell[1] + 2):
+                if i >= 0 and i < num_rows and j >= 0 and j < num_cols and matrix[i][j] is not None and (i, j) != cell:
+                    new_list.remove(cell)
+                    check = False
+                    break
+            if check == False:
+                break
+    return new_list
+
 def get_list_uninvolved_and_involved_cells_variable(combination, surrounding_cells, variables):
     uninvolved_cells = []
     involved_cells = []
@@ -76,6 +96,9 @@ def generateCNFFromConstraints(matrix, num_rows, num_cols, variables):
     for cell in numbered_cells:
         clause = generateCNFFromConstraintsByCell(cell, matrix, num_rows, num_cols, variables)
         clauses.extend(clause)
+    irrelevant_cells = get_irrelevant_cells(matrix, num_rows, num_cols)
+    for cell in irrelevant_cells:
+        clauses.append([variables[cell]])
     return clauses
 
 # solve CNF formula and return the cells that are traps, cells that are not gems
@@ -113,7 +136,7 @@ def printInitialMatrix(matrix, num_rows, num_cols):
         print()
 
 if __name__ == '__main__':
-    matrix, num_rows, num_cols = read_matrix_from_file('input2.txt')
+    matrix, num_rows, num_cols = read_matrix_from_file("testcases/11x11.txt")
     print("Problem:")
     printInitialMatrix(matrix, num_rows, num_cols)
     print()
