@@ -31,6 +31,13 @@ def solve_gem_hunter(matrix):
         if is_valid_solution(matrix):
             return True
         if matrix[i][j] is None:
+            # if all surrounding cells are not numbers, set cell to 'G'
+            if all((matrix[x][y] is None or matrix[x][y] == 'G' or matrix[x][y] == 'T') for x in range(max(0, i-1), min(len(matrix), i+2))
+                                        for y in range(max(0, j-1), min(len(matrix[0]), j+2))):
+                matrix[i][j] = 'G'
+                if backtrack(matrix, i, j): # recursive call
+                    return True
+
             matrix[i][j] = 'T'  # set cell to T
             # recursive call
             if backtrack(matrix, i, j):
