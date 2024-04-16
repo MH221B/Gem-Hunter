@@ -136,7 +136,7 @@ def printInitialMatrix(matrix, num_rows, num_cols):
         print()
 
 if __name__ == '__main__':
-    matrix, num_rows, num_cols = read_matrix_from_file("testcases/11x11.txt")
+    matrix, num_rows, num_cols = read_matrix_from_file("testcases/15x15.txt")
     print("Problem:")
     printInitialMatrix(matrix, num_rows, num_cols)
     print()

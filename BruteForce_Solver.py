@@ -1,5 +1,3 @@
-
-
 def read_matrix_from_file(file_path):
     matrix = []
     with open(file_path, 'r') as file:
@@ -67,4 +65,4 @@ def main(file_path):
 
 
 if __name__ == "__main__":
-    main("testcases/11x11.txt")
+    main("testcases/15x15.txt")
