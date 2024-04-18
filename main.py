@@ -88,6 +88,13 @@ def generateCNFFromConstraintsByCell(cell,matrix, num_rows, num_cols, variables)
             sub_clause = sorted(sub_clause)
             if sub_clause not in clauses:
                 clauses.append(sub_clause)
+        for cell in involved_cells:
+            sub_clause = []
+            sub_clause.append(-cell)
+            sub_clause.extend(-x for x in uninvolved_cells)
+            sub_clause = sorted(sub_clause)
+            if sub_clause not in clauses:
+                clauses.append(sub_clause)
     return clauses
 
 def generateCNFFromConstraints(matrix, num_rows, num_cols, variables):
@@ -117,6 +124,22 @@ def solveCNF(clauses, variables):
             traps.append(-m)
     return traps, gems
 
+def assignUnitClause(clauses, variables, assignment):
+    for clause in clauses:
+        if len(clause) == 1:
+            if clause[0] > 0:
+                assignment[abs(clause[0])] = True
+            else:
+                assignment[abs(clause[0])] = False
+    return assignment
+# solve by DPLL
+def DPLL(clauses, variables, assignment):
+    assignment = assignUnitClause(clauses, variables, assignment)
+    for i in range(1, len(variables) + 1):
+        if assignment[i] is None:
+            assignment[i] = True
+    return assignment
+
 def printCompleteMatrix(matrix, num_rows, num_cols, traps, gems, variables):
     for i in range(num_rows):
         for j in range(num_cols):
@@ -136,7 +159,7 @@ def printInitialMatrix(matrix, num_rows, num_cols):
         print()
 
 if __name__ == '__main__':
-    matrix, num_rows, num_cols = read_matrix_from_file("testcases/15x15.txt")
+    matrix, num_rows, num_cols = read_matrix_from_file("testcases/input4.txt")
     print("Problem:")
     printInitialMatrix(matrix, num_rows, num_cols)
     print()
@@ -145,4 +168,23 @@ if __name__ == '__main__':
     traps, gems = solveCNF(clauses, variables)
     print("Solution:")
     printCompleteMatrix(matrix, num_rows, num_cols, traps, gems, variables)
+    # print()
+    # print("Solution without using solver:")
+    # # Create a dictionary to store the assignment of variables
+    # assignment = {}
+    # for i in range(1, len(variables) + 1):
+    #     assignment[i] = None
+    # assignment = assignUnitClause(clauses, variables, assignment)
+    # assignment = DPLL(clauses, variables, assignment)
+    # for i in range(num_rows):
+    #     for j in range(num_cols):
+    #         if matrix[i][j] is not None:
+    #             print(matrix[i][j], end=' ')
+    #         else:
+    #             if assignment[variables[(i, j)]] == False:
+    #                 print('T', end=' ')
+    #             elif assignment[variables[(i, j)]] == True:
+    #                 print('G', end=' ')
+    #     print()
+
     
