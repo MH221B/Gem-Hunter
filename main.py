@@ -106,7 +106,15 @@ def generateCNFFromConstraints(matrix, num_rows, num_cols, variables):
     irrelevant_cells = get_irrelevant_cells(matrix, num_rows, num_cols)
     for cell in irrelevant_cells:
         clauses.append([variables[cell]])
+    clauses = removeDuplicates(clauses)
     return clauses
+
+def removeDuplicates(clauses):
+    new_clauses = []
+    for clause in clauses:
+        if clause not in new_clauses:
+            new_clauses.append(clause)
+    return new_clauses
 
 # solve CNF formula and return the cells that are traps, cells that are not gems
 def solveCNF(clauses, variables):
@@ -115,6 +123,8 @@ def solveCNF(clauses, variables):
         solver.add_clause(clause)
     solver.solve()
     model = solver.get_model()
+    if model is None:
+        return [], []
     traps = []
     gems = []
     for m in model:
@@ -159,15 +169,18 @@ def printInitialMatrix(matrix, num_rows, num_cols):
         print()
 
 if __name__ == '__main__':
-    matrix, num_rows, num_cols = read_matrix_from_file("testcases/input4.txt")
+    matrix, num_rows, num_cols = read_matrix_from_file("testcases/input5.txt")
     print("Problem:")
     printInitialMatrix(matrix, num_rows, num_cols)
     print()
     variables = assign_variables(matrix, num_rows, num_cols)
     clauses = generateCNFFromConstraints(matrix, num_rows, num_cols, variables)
     traps, gems = solveCNF(clauses, variables)
-    print("Solution:")
-    printCompleteMatrix(matrix, num_rows, num_cols, traps, gems, variables)
+    if not traps and not gems:
+        print("No solution")
+    else:
+        print("Solution:")
+        printCompleteMatrix(matrix, num_rows, num_cols, traps, gems, variables)
     # print()
     # print("Solution without using solver:")
     # # Create a dictionary to store the assignment of variables
