@@ -162,7 +162,7 @@ def chooseLiteral(clauses, unit_clauses=[]):
     if clauses:
         if unit_clauses != []:
             res = unit_clauses[0][0]
-            print(f"Choose unit clause: {res}")
+            # print(f"Choose unit clause: {res}")
             unit_clauses.pop(0)
             return res
         else:
@@ -179,7 +179,7 @@ def chooseLiteral(clauses, unit_clauses=[]):
                         if value not in val:
                             val.append(value)
             res = getMostOccuringLiteral(min_clauses, val)
-            print(f"Choose most occuring literal in min clauses: {res}")
+            # print(f"Choose most occuring literal in min clauses: {res}")
             return res
     return None
 
@@ -210,17 +210,20 @@ def printSolution(matrix, num_rows, num_cols, variables, variable_values):
         print()
 
 if __name__ == "__main__":
-    matrix, num_rows, num_cols = read_matrix_from_file('testcases/11x11.txt')
+    matrix, num_rows, num_cols = read_matrix_from_file('testcases/input7.txt')
     data = assign_variables(matrix, num_rows, num_cols)
+    print("Problem:")
+    printInitialMatrix(matrix, num_rows, num_cols)
+    print()
     variables = data[0]
     variable_values = data[1]
     unit_clause = []
     clauses = generateCNFFromConstraints(matrix, num_rows, num_cols, variables, unit_clause)
     unit_clause = removeDuplicates(unit_clause)
-    print(unit_clause)
+    # print(unit_clause)
     check = DPLL(clauses, variable_values = variable_values, unit_clauses = unit_clause)
-    print("Problem:")
-    printInitialMatrix(matrix, num_rows, num_cols)
-    print()
-    print("Solution:")
-    printSolution(matrix, num_rows, num_cols, variables, variable_values)
+    if not check:
+        print("No solution")
+    else:
+        print("Solution:")
+        printSolution(matrix, num_rows, num_cols, variables, variable_values)
