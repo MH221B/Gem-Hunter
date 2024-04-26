@@ -1,5 +1,8 @@
 from itertools import combinations
 from copy import deepcopy
+from random import choice
+from random import random
+import time
 
 def read_matrix_from_file(file_path):
     matrix = []
@@ -120,12 +123,6 @@ def removeDuplicates(clauses):
             new_clauses.append(clause)
     return new_clauses
 
-def printInitialMatrix(matrix, num_rows, num_cols):
-    for i in range(num_rows):
-        for j in range(num_cols):
-            print(matrix[i][j] if matrix[i][j] is not None else '_', end=' ')
-        print()
-
 def removeLiteral(clause, literal):
     if literal in clause:
         return True
@@ -142,63 +139,69 @@ def removeLiteralFromClauses(clauses, literal):
             new_clauses.append(new_clause)
     return new_clauses
 
-def calcOccuringLiteralInMinClauses(value, min_clauses):
-    count = 0
-    for clause in min_clauses:
-        if value in clause:
-            count += 1
-    return count
-
-def getMostOccuringLiteral(min_clauses, val):
-    count = 0
-    res = None
-    for value in val:
-        if calcOccuringLiteralInMinClauses(value, min_clauses) > count:
-            count = calcOccuringLiteralInMinClauses(value, min_clauses)
-            res = value
-    return res
-
-def chooseLiteral(clauses, unit_clauses=[]):
-    if clauses:
-        if unit_clauses != []:
-            res = unit_clauses[0][0]
-            # print(f"Choose unit clause: {res}")
-            unit_clauses.pop(0)
-            return res
+def checkSolve(clauses, variable_values):
+    new_clauses = deepcopy(clauses)
+    for val in variable_values:
+        if variable_values[val] == True:
+            new_clauses = removeLiteralFromClauses(new_clauses, val)
         else:
-            min_len = len(clauses[0])
-            for i in range(1, len(clauses)):
-                if len(clauses[i]) < min_len:
-                    min_len = len(clauses[i])
-            val = []
-            min_clauses = []
-            for clause in clauses:
-                if len(clause) == min_len:
-                    min_clauses.append(clause)
-                    for value in clause:
-                        if value not in val:
-                            val.append(value)
-            res = getMostOccuringLiteral(min_clauses, val)
-            # print(f"Choose most occuring literal in min clauses: {res}")
-            return res
-    return None
-
-def DPLL(clauses, literal=None, variable_values={}, unit_clauses=[]):
-    if literal != None:
-        variable_values[abs(literal)] = True if literal > 0 else False
-        new_clauses = removeLiteralFromClauses(clauses, literal)
-    else:
-        new_clauses = clauses
+            new_clauses = removeLiteralFromClauses(new_clauses, -val)
     if not new_clauses:
         return True
     if [] in new_clauses:
-        return False 
-    new_literal = chooseLiteral(new_clauses, unit_clauses)
-    if new_literal:
-        if DPLL(new_clauses, -new_literal, variable_values, unit_clauses):
-            return True
-        return DPLL(new_clauses, new_literal, variable_values, unit_clauses)
-    return True
+        return False
+
+def getFalseClauses(clauses, variable_values):
+    false_clauses = []
+    for clause in clauses:
+        check = False
+        for literal in clause:
+            if literal > 0 and variable_values[literal] == True:
+                check = True
+                break
+            if literal < 0 and variable_values[-literal] == False:
+                check = True
+                break
+        if not check:
+            false_clauses.append(clause)
+    return false_clauses
+
+def computeBreakCount(clauses, variable_values, literal):
+    break_count = 0
+    for clause in clauses:
+        if literal in clause:
+            if len(clause) == 1:
+                if variable_values[abs(literal)] == False:
+                    break_count += 1
+        elif -literal in clause:
+            if len(clause) == 1:
+                if variable_values[abs(literal)] == True:
+                    break_count += 1
+    return break_count
+
+def walkSAT(clauses, variable_values, p):
+    while checkSolve(clauses, variable_values) == False:
+        false_clauses = getFalseClauses(clauses, variable_values)
+        clause = choice(false_clauses)
+        check = False
+        for literal in clause:
+            break_count = computeBreakCount(clauses, variable_values, abs(literal))
+            if break_count == 0:
+                variable_values[abs(literal)] = not variable_values[abs(literal)]
+                check = True
+                break
+        if check == False:
+            if random() < p:
+                literal = choice(clause)
+            else:
+                literal = min(clause, key=lambda x: computeBreakCount(clauses, variable_values, abs(x)))
+            variable_values[abs(literal)] = not variable_values[abs(literal)]
+
+def printInitialMatrix(matrix, num_rows, num_cols):
+    for i in range(num_rows):
+        for j in range(num_cols):
+            print(matrix[i][j] if matrix[i][j] is not None else '_', end=' ')
+        print()
 
 def printSolution(matrix, num_rows, num_cols, variables, variable_values):
     for i in range(num_rows):
@@ -226,6 +229,10 @@ def printMatrix(matrix, num_rows, num_cols):
             print(matrix[i][j], end=' ')
         print()
 
+def updateVariableValues(variable_values, dict_unassigned):
+    for val in dict_unassigned:
+        variable_values[val] = dict_unassigned[val]
+
 if __name__ == "__main__":
     matrix, num_rows, num_cols = read_matrix_from_file('testcases/input4.txt')
     data = assign_variables(matrix, num_rows, num_cols)
@@ -236,15 +243,20 @@ if __name__ == "__main__":
     variable_values = data[1]
     unit_clause = []
     clauses = generateCNFFromConstraints(matrix, num_rows, num_cols, variables, unit_clause)
-    print(clauses)
     unit_clause = removeDuplicates(unit_clause)
-    # print(unit_clause)
-    check = DPLL(clauses, variable_values = variable_values, unit_clauses = unit_clause)
-    print(variable_values)
-    if not check:
-        print("No solution")
-    else:
-        print("Solution:")
-        # printSolution(matrix, num_rows, num_cols, variables, variable_values)
-        solution = solutionMatrix(matrix, num_rows, num_cols, variables, variable_values)
-        printMatrix(solution, num_rows, num_cols)
+    for i in range(len(unit_clause)):
+        variable_values[abs(unit_clause[i][0])] = False
+    for i in range(len(unit_clause)):
+        clauses = removeLiteralFromClauses(clauses, unit_clause[i][0])
+    dict_unassigned = {}
+    for val in variable_values:
+        if variable_values[val] == None:
+            dict_unassigned[val] = False
+    start = time.time()
+    walkSAT(clauses, dict_unassigned, 0.5)
+    end = time.time()
+    print("Solution:")
+    updateVariableValues(variable_values, dict_unassigned)
+    printSolution(matrix, num_rows, num_cols, variables, variable_values)
+    print("Time:", end - start, "s")
+    
