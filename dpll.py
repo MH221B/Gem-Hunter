@@ -209,8 +209,25 @@ def printSolution(matrix, num_rows, num_cols, variables, variable_values):
                 print('G' if variable_values[variables[(i, j)]] else 'T', end=' ')
         print()
 
+def solutionMatrix(matrix, num_rows, num_cols, variables, variable_values):
+    new_matrix = deepcopy(matrix)
+    for i in range(num_rows):
+        for j in range(num_cols):
+            if matrix[i][j] is None:
+                if variable_values[variables[(i, j)]]:
+                    new_matrix[i][j] = 'G'
+                else:
+                    new_matrix[i][j] = 'T'
+    return new_matrix
+
+def printMatrix(matrix, num_rows, num_cols):
+    for i in range(num_rows):
+        for j in range(num_cols):
+            print(matrix[i][j], end=' ')
+        print()
+
 if __name__ == "__main__":
-    matrix, num_rows, num_cols = read_matrix_from_file('testcases/input7.txt')
+    matrix, num_rows, num_cols = read_matrix_from_file('testcases/input4.txt')
     data = assign_variables(matrix, num_rows, num_cols)
     print("Problem:")
     printInitialMatrix(matrix, num_rows, num_cols)
@@ -226,4 +243,6 @@ if __name__ == "__main__":
         print("No solution")
     else:
         print("Solution:")
-        printSolution(matrix, num_rows, num_cols, variables, variable_values)
+        # printSolution(matrix, num_rows, num_cols, variables, variable_values)
+        solution = solutionMatrix(matrix, num_rows, num_cols, variables, variable_values)
+        printMatrix(solution, num_rows, num_cols)

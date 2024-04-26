@@ -152,8 +152,29 @@ def printInitialMatrix(matrix, num_rows, num_cols):
             print(matrix[i][j] if matrix[i][j] is not None else '_', end=' ')
         print()
 
+def solutionMatrix(matrix, num_rows, num_cols, traps, gems, variables):
+    result = []
+    for i in range(num_rows):
+        row = []
+        for j in range(num_cols):
+            if matrix[i][j] is not None:
+                row.append(matrix[i][j])
+            else:
+                if variables[(i, j)] in traps:
+                    row.append('T')
+                elif variables[(i, j)] in gems:
+                    row.append('G')
+        result.append(row)
+    return result
+
+def printSolution(matrix, num_rows, num_cols):
+    for i in range(num_rows):
+        for j in range(num_cols):
+            print(matrix[i][j], end=' ')
+        print()
+
 if __name__ == '__main__':
-    matrix, num_rows, num_cols = read_matrix_from_file("testcases/9x9.txt")
+    matrix, num_rows, num_cols = read_matrix_from_file("testcases/20x20.txt")
     print("Problem:")
     printInitialMatrix(matrix, num_rows, num_cols)
     print()
@@ -164,6 +185,8 @@ if __name__ == '__main__':
         print("No solution")
     else:
         print("Solution:")
-        printCompleteMatrix(matrix, num_rows, num_cols, traps, gems, variables)
+        # printCompleteMatrix(matrix, num_rows, num_cols, traps, gems, variables)
+        solution = solutionMatrix(matrix, num_rows, num_cols, traps, gems, variables)
+        printSolution(solution, num_rows, num_cols)
 
     
