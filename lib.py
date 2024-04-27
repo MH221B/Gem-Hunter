@@ -74,7 +74,8 @@ def get_list_uninvolved_and_involved_cells_variable(combination, surrounding_cel
 def generateCNFFromConstraintsByCell(cell,matrix, num_rows, num_cols, variables):
     clauses = []
     surrrounding_cells = get_surrounding_cells(matrix, cell, num_rows, num_cols)
-    if matrix[cell[0]][cell[1]] == len(surrrounding_cells):
+    # If the number of surrounding cells is equal to the number of the specified cell, then all surrounding cells are traps
+    if matrix[cell[0]][cell[1]] == len(surrrounding_cells): 
         for c in surrrounding_cells:
             clauses.append([-variables[c]])
         return clauses
@@ -180,6 +181,7 @@ def main(fileName):
     print()
     variables = assign_variables(matrix, num_rows, num_cols)
     clauses = generateCNFFromConstraints(matrix, num_rows, num_cols, variables)
+    # print(clauses)
     traps, gems = solveCNF(clauses, variables)
     if not traps and not gems:
         print("No solution")

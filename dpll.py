@@ -240,7 +240,7 @@ def main(fileName):
     unit_clause = removeDuplicates(unit_clause)
     # print(unit_clause)
     check = DPLL(clauses, variable_values = variable_values, unit_clauses = unit_clause)
-    print(variable_values)
+    # print(variable_values)
     if not check:
         print("No solution")
     else:
