@@ -251,7 +251,7 @@ if __name__ == "__main__":
     dict_unassigned = {}
     for val in variable_values:
         if variable_values[val] == None:
-            dict_unassigned[val] = False
+            dict_unassigned[val] = True
     start = time.time()
     walkSAT(clauses, dict_unassigned, 0.5)
     end = time.time()
