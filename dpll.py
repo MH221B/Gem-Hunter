@@ -226,8 +226,8 @@ def printMatrix(matrix, num_rows, num_cols):
             print(matrix[i][j], end=' ')
         print()
 
-if __name__ == "__main__":
-    matrix, num_rows, num_cols = read_matrix_from_file('testcases/input4.txt')
+def main(fileName):
+    matrix, num_rows, num_cols = read_matrix_from_file('testcases/' + fileName)
     data = assign_variables(matrix, num_rows, num_cols)
     print("Problem:")
     printInitialMatrix(matrix, num_rows, num_cols)

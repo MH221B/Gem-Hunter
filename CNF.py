@@ -1,8 +1,6 @@
+from pysat.formula import *
 from itertools import combinations
-from copy import deepcopy
-from random import choice
-from random import random
-import time
+from pysat.solvers import Solver
 
 def read_matrix_from_file(file_path):
     matrix = []
@@ -19,14 +17,11 @@ def read_matrix_from_file(file_path):
 def assign_variables(matrix, num_rows, num_cols):
     count = 1
     variables = {}
-    variable_values = {}
     for i in range(num_rows):
         for j in range(num_cols):
             variables[(i, j)] = count
-            if matrix[i][j] is None:
-                variable_values[count] = None
             count += 1
-    return variables, variable_values
+    return variables
 
 # Get the neighboring cells of a cell
 def get_surrounding_cells(matrix, pos, num_rows, num_cols):
@@ -82,7 +77,7 @@ def generateCNFFromConstraintsByCell(cell,matrix, num_rows, num_cols, variables)
     if matrix[cell[0]][cell[1]] == len(surrrounding_cells):
         for c in surrrounding_cells:
             clauses.append([-variables[c]])
-        return clauses, True
+        return clauses
     combination = combinations(surrrounding_cells, matrix[cell[0]][cell[1]])
     for c in combination:
         uninvolved_cells, involved_cells = get_list_uninvolved_and_involved_cells_variable(c, surrrounding_cells, variables)
@@ -100,16 +95,14 @@ def generateCNFFromConstraintsByCell(cell,matrix, num_rows, num_cols, variables)
             sub_clause = sorted(sub_clause)
             if sub_clause not in clauses:
                 clauses.append(sub_clause)
-    return clauses, False
+    return clauses
 
-def generateCNFFromConstraints(matrix, num_rows, num_cols, variables, unit_clauses=[]):
+def generateCNFFromConstraints(matrix, num_rows, num_cols, variables):
     clauses = []
     numbered_cells = get_numbered_cells(matrix, num_rows, num_cols)
     for cell in numbered_cells:
         clause = generateCNFFromConstraintsByCell(cell, matrix, num_rows, num_cols, variables)
-        if clause[1] == True:
-            unit_clauses.extend(deepcopy(clause[0]))
-        clauses.extend(clause[0])
+        clauses.extend(clause)
     irrelevant_cells = get_irrelevant_cells(matrix, num_rows, num_cols)
     for cell in irrelevant_cells:
         clauses.append([variables[cell]])
@@ -123,79 +116,35 @@ def removeDuplicates(clauses):
             new_clauses.append(clause)
     return new_clauses
 
-def removeLiteral(clause, literal):
-    if literal in clause:
-        return True
-    if -literal in clause:
-        clause.remove(-literal)
-    return clause
-
-def removeLiteralFromClauses(clauses, literal):
-    new_clauses = []
+# solve CNF formula and return the cells that are traps, cells that are not gems
+def solveCNF(clauses, variables):
+    solver = Solver()
     for clause in clauses:
-        copied_clause = deepcopy(clause)
-        new_clause = removeLiteral(copied_clause, literal)
-        if new_clause != True:
-            new_clauses.append(new_clause)
-    return new_clauses
-
-def checkSolve(clauses, variable_values):
-    new_clauses = deepcopy(clauses)
-    for val in variable_values:
-        if variable_values[val] == True:
-            new_clauses = removeLiteralFromClauses(new_clauses, val)
+        solver.add_clause(clause)
+    solver.solve()
+    model = solver.get_model()
+    if model is None:
+        return [], []
+    traps = []
+    gems = []
+    for m in model:
+        if m > 0:
+            gems.append(m)
         else:
-            new_clauses = removeLiteralFromClauses(new_clauses, -val)
-    if not new_clauses:
-        return True
-    if [] in new_clauses:
-        return False
+            traps.append(-m)
+    return traps, gems
 
-def getFalseClauses(clauses, variable_values):
-    false_clauses = []
-    for clause in clauses:
-        check = False
-        for literal in clause:
-            if literal > 0 and variable_values[literal] == True:
-                check = True
-                break
-            if literal < 0 and variable_values[-literal] == False:
-                check = True
-                break
-        if not check:
-            false_clauses.append(clause)
-    return false_clauses
-
-def computeBreakCount(clauses, variable_values, literal):
-    break_count = 0
-    for clause in clauses:
-        if literal in clause:
-            if len(clause) == 1:
-                if variable_values[abs(literal)] == False:
-                    break_count += 1
-        elif -literal in clause:
-            if len(clause) == 1:
-                if variable_values[abs(literal)] == True:
-                    break_count += 1
-    return break_count
-
-def walkSAT(clauses, variable_values, p):
-    while checkSolve(clauses, variable_values) == False:
-        false_clauses = getFalseClauses(clauses, variable_values)
-        clause = choice(false_clauses)
-        check = False
-        for literal in clause:
-            break_count = computeBreakCount(clauses, variable_values, abs(literal))
-            if break_count == 0:
-                variable_values[abs(literal)] = not variable_values[abs(literal)]
-                check = True
-                break
-        if check == False:
-            if random() < p:
-                literal = choice(clause)
+def printCompleteMatrix(matrix, num_rows, num_cols, traps, gems, variables):
+    for i in range(num_rows):
+        for j in range(num_cols):
+            if matrix[i][j] is not None:
+                print(matrix[i][j], end=' ')
             else:
-                literal = min(clause, key=lambda x: computeBreakCount(clauses, variable_values, abs(x)))
-            variable_values[abs(literal)] = not variable_values[abs(literal)]
+                if variables[(i, j)] in traps:
+                    print('T', end=' ')
+                elif variables[(i, j)] in gems:
+                    print('G', end=' ')
+        print()
 
 def printInitialMatrix(matrix, num_rows, num_cols):
     for i in range(num_rows):
@@ -203,60 +152,41 @@ def printInitialMatrix(matrix, num_rows, num_cols):
             print(matrix[i][j] if matrix[i][j] is not None else '_', end=' ')
         print()
 
-def printSolution(matrix, num_rows, num_cols, variables, variable_values):
+def solutionMatrix(matrix, num_rows, num_cols, traps, gems, variables):
+    result = []
     for i in range(num_rows):
+        row = []
         for j in range(num_cols):
             if matrix[i][j] is not None:
-                print(matrix[i][j], end=' ')
+                row.append(matrix[i][j])
             else:
-                print('G' if variable_values[variables[(i, j)]] else 'T', end=' ')
-        print()
+                if variables[(i, j)] in traps:
+                    row.append('T')
+                elif variables[(i, j)] in gems:
+                    row.append('G')
+        result.append(row)
+    return result
 
-def solutionMatrix(matrix, num_rows, num_cols, variables, variable_values):
-    new_matrix = deepcopy(matrix)
-    for i in range(num_rows):
-        for j in range(num_cols):
-            if matrix[i][j] is None:
-                if variable_values[variables[(i, j)]]:
-                    new_matrix[i][j] = 'G'
-                else:
-                    new_matrix[i][j] = 'T'
-    return new_matrix
-
-def printMatrix(matrix, num_rows, num_cols):
+def printSolution(matrix, num_rows, num_cols):
     for i in range(num_rows):
         for j in range(num_cols):
             print(matrix[i][j], end=' ')
         print()
 
-def updateVariableValues(variable_values, dict_unassigned):
-    for val in dict_unassigned:
-        variable_values[val] = dict_unassigned[val]
-
 def main(fileName):
-    matrix, num_rows, num_cols = read_matrix_from_file('testcases/' + fileName)
-    data = assign_variables(matrix, num_rows, num_cols)
+    matrix, num_rows, num_cols = read_matrix_from_file("testcases/" + fileName)
     print("Problem:")
     printInitialMatrix(matrix, num_rows, num_cols)
     print()
-    variables = data[0]
-    variable_values = data[1]
-    unit_clause = []
-    clauses = generateCNFFromConstraints(matrix, num_rows, num_cols, variables, unit_clause)
-    unit_clause = removeDuplicates(unit_clause)
-    for i in range(len(unit_clause)):
-        variable_values[abs(unit_clause[i][0])] = False
-    for i in range(len(unit_clause)):
-        clauses = removeLiteralFromClauses(clauses, unit_clause[i][0])
-    dict_unassigned = {}
-    for val in variable_values:
-        if variable_values[val] == None:
-            dict_unassigned[val] = True
-    start = time.time()
-    walkSAT(clauses, dict_unassigned, 0.5)
-    #end = time.time()
-    print("Solution:")
-    updateVariableValues(variable_values, dict_unassigned)
-    printSolution(matrix, num_rows, num_cols, variables, variable_values)
-    #print("Time:", end - start, "s")
+    variables = assign_variables(matrix, num_rows, num_cols)
+    clauses = generateCNFFromConstraints(matrix, num_rows, num_cols, variables)
+    traps, gems = solveCNF(clauses, variables)
+    if not traps and not gems:
+        print("No solution")
+    else:
+        print("Solution:")
+        # printCompleteMatrix(matrix, num_rows, num_cols, traps, gems, variables)
+        solution = solutionMatrix(matrix, num_rows, num_cols, traps, gems, variables)
+        printSolution(solution, num_rows, num_cols)
+
     
