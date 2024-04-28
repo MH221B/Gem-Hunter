@@ -211,5 +211,7 @@ def main(fileName):
         # printSolution(matrix, num_rows, num_cols, variables, variable_values)
         solution = solutionMatrix(matrix, num_rows, num_cols, variables, variable_values)
         printMatrix(solution, num_rows, num_cols)
+        return solution
     else:
         print("No solution")
+        return None

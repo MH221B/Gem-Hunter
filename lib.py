@@ -185,10 +185,10 @@ def main(fileName):
     traps, gems = solveCNF(clauses, variables)
     if not traps and not gems:
         print("No solution")
+        return None
     else:
         print("Solution:")
         # printCompleteMatrix(matrix, num_rows, num_cols, traps, gems, variables)
         solution = solutionMatrix(matrix, num_rows, num_cols, traps, gems, variables)
         printSolution(solution, num_rows, num_cols)
-
-    
+    return solution

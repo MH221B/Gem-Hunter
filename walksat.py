@@ -252,11 +252,8 @@ def main(fileName):
     for val in variable_values:
         if variable_values[val] == None:
             dict_unassigned[val] = True
-    start = time.time()
     walkSAT(clauses, dict_unassigned, 0.5)
-    #end = time.time()
     print("Solution:")
     updateVariableValues(variable_values, dict_unassigned)
     printSolution(matrix, num_rows, num_cols, variables, variable_values)
-    #print("Time:", end - start, "s")
-    
+    return solutionMatrix(matrix, num_rows, num_cols, variables, variable_values)
