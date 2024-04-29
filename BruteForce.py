@@ -145,6 +145,9 @@ def assignGuaranteedValues(matrix, num_rows, num_cols, variables, variable_value
         if matrix[cell[0]][cell[1]] == len(surrrounding_cells):
             for c in surrrounding_cells:
                 variable_values[variables[c]] = False
+    irrelevant_cells = get_irrelevant_cells(matrix, num_rows, num_cols)
+    for cell in irrelevant_cells:
+        variable_values[variables[cell]] = True
 
 def backtrack(matrix, num_rows, num_cols, variables, variable_values, list_unassigned, size, index):
     if index == size:

@@ -12,10 +12,12 @@ def list_text_files(folder_path):
             text_files.append(file)
     return text_files
 
-def save_solution_to_file(solution, file_path):
+def save_solution_to_file(solution, file_path, time_taken):
     with open(file_path, 'w') as file:
         for row in solution:
             file.write(' '.join([str(x) for x in row]) + '\n')
+        file.write('\n')
+        file.write(f"Time taken: {time_taken} seconds")
 
 if __name__ == '__main__':
     folder_path = 'testcases'
@@ -27,7 +29,7 @@ if __name__ == '__main__':
     print("3. DPLL")
     print("4. WalkSAT")
     print("0. Exit")
-    algorithm = int(input())
+    algorithm = int(input("Input: "))
     if algorithm == 0:
         exit()
     
@@ -35,7 +37,7 @@ if __name__ == '__main__':
     for i, file in enumerate(files):
         print(f"{i + 1}. {file}")
     print("0. Exit")
-    file_index = int(input()) - 1
+    file_index = int(input("Input: ")) - 1
     if file_index == -1:
         exit()
     
@@ -46,25 +48,25 @@ if __name__ == '__main__':
         end = time.time()
         print(f"Time taken for bruteforce algorithm: {end - start} seconds")
         if solution is not None:
-            save_solution_to_file(solution, 'solutions/' + files[file_index].replace('.txt', '_BruteForce_solution.txt'))
+            save_solution_to_file(solution, 'solutions/' + files[file_index].replace('.txt', '_BruteForce_solution.txt'), end - start)
     elif algorithm == 2:
         start = time.time()
         solution = LIB_main(files[file_index])
         end = time.time()
         print(f"Time taken for library-supported alogrithm: {end - start} seconds")
         if solution is not None:
-            save_solution_to_file(solution, 'solutions/' + files[file_index].replace('.txt', '_LIB_solution.txt'))
+            save_solution_to_file(solution, 'solutions/' + files[file_index].replace('.txt', '_LIB_solution.txt'), end - start)
     elif algorithm == 3:
         start = time.time()
         solution = DPLL_main(files[file_index])
         end = time.time()
         print(f"Time taken for DPLL algorithm: {end - start} seconds")
         if solution is not None:
-            save_solution_to_file(solution, 'solutions/' + files[file_index].replace('.txt', '_DPLL_solution.txt'))
+            save_solution_to_file(solution, 'solutions/' + files[file_index].replace('.txt', '_DPLL_solution.txt'), end - start)
     elif algorithm == 4:
         start = time.time()
         solution = WalkSAT_main(files[file_index])
         end = time.time()
         print(f"Time taken for WalkSAT algorithm: {end - start} seconds")
         if solution is not None:
-            save_solution_to_file(solution, 'solutions/' + files[file_index].replace('.txt', '_WalkSAT_solution.txt'))
+            save_solution_to_file(solution, 'solutions/' + files[file_index].replace('.txt', '_WalkSAT_solution.txt'), end - start)

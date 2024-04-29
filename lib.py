@@ -71,7 +71,7 @@ def get_list_uninvolved_and_involved_cells_variable(combination, surrounding_cel
             involved_cells.append(variables[cell])
     return uninvolved_cells, involved_cells
 
-def generateCNFFromConstraintsByCell(cell,matrix, num_rows, num_cols, variables):
+def generateCNFFromConstraintsByCell(cell, matrix, num_rows, num_cols, variables):
     clauses = []
     surrrounding_cells = get_surrounding_cells(matrix, cell, num_rows, num_cols)
     # If the number of surrounding cells is equal to the number of the specified cell, then all surrounding cells are traps
