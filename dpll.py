@@ -236,7 +236,7 @@ def main(fileName):
     variable_values = data[1]
     unit_clause = []
     clauses = generateCNFFromConstraints(matrix, num_rows, num_cols, variables, unit_clause)
-    print(clauses)
+    #print(clauses)
     unit_clause = removeDuplicates(unit_clause)
     # print(unit_clause)
     check = DPLL(clauses, variable_values = variable_values, unit_clauses = unit_clause)

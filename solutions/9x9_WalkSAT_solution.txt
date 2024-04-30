@@ -8,4 +8,4 @@ T 4 2 G 2 T 3 1 1
 1 1 2 T T 3 1 G G
 1 T 2 2 3 T G G G
 
-Time taken: 0.015244483947753906 seconds
+Time taken: 0.017500877380371094 seconds
